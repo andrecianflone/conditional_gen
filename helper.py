@@ -2,7 +2,7 @@ from pprint import pprint
 import codecs
 import json
 from utils import sst_binary
-from encoder import Model
+from sentiment_neuron.model.encoder import Model
 import pickle
 import time
 

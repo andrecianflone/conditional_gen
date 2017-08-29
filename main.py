@@ -3,6 +3,7 @@ import json
 import pickle
 import numpy as np
 from sentiment_neuron.utils import sst_binary
+from sentiment_neuron.utils import train_with_reg_cv as log_regression_sk
 from models import log_regression_tf
 import time
 
@@ -37,20 +38,25 @@ def get_x_y(path, relation=None):
   y = np.array(y)
   return x, y
 
+relation = 'Contingency'
+trX, trY =  get_x_y('data/one_v_all_train.json', relation)
+vaX, vaY =  get_x_y('data/one_v_all_dev.json', relation)
+teX, teY =  get_x_y('data/one_v_all_test.json', relation)
+
 # Tensorflow log reg
 print('Training with tensorflow logistic regression')
 t1 = time.time()
-full_rep_acc, c, nnotzero = log_regression_tf(trX, trY, vaX, vaY, teX, teY)
-f1_test, val_f1, coefs, nnotzero = log_regression_tf(trX, trY, vaX, vaY, teX, teY)
-print('training time: {}'.format(time.time() - t1))
+f1_test, f1_val, coefs = log_regression_tf(trX, trY, vaX, vaY, teX, teY)
+print('training min: {}'.format(round((time.time() - t1)/60, 1)))
+print('%05.2f test f1'%f1_test)
+print('%05.2f validation f1'%f1_val)
+
+# SKlearn log reg
+print('Training with sklearn logistic regression')
+t1 = time.time()
+full_rep_acc, c, nnotzero = log_regression_sk(trX, trY, vaX, vaY, teX, teY)
+print('training min: {}'.format(round((time.time() - t1)/60, 1)))
 print('%05.2f test accuracy'%full_rep_acc)
 print('%05.2f regularization coef'%c)
 print('%05d features used'%nnotzero)
 
-# SKlearn log reg
-print('Training with sklearn logistic regression')
-full_rep_acc, c, nnotzero = log_regression_tf(trX, trY, vaX, vaY, teX, teY)
-print('training time: {}'.format(time.time() - t1))
-print('%05.2f test accuracy'%full_rep_acc)
-print('%05.2f regularization coef'%c)
-print('%05d features used'%nnotzero)

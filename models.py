@@ -89,13 +89,9 @@ def evaluate(sess, model, x, y):
   f1 = f1_score(y, y_preds, pos_label=1, average='binary')
   return f1
 
-def log_regression_tf(trX, trY, vaX, vaY, teX=None, teY=None, penalty='l1',
-    C=2**np.arange(-8, 1).astype(np.float), seed=42):
+def log_regression_tf(trX, trY, vaX, vaY, teX, teY):
   """
   Logistic regression
-  Args:
-    C: numpy vector of inv of regularization strength (smaller values ->
-      stronger regularization)
   """
   # Expand y dims
   trY = np.expand_dims(trY, axis=1)
@@ -145,38 +141,4 @@ def log_regression_tf(trX, trY, vaX, vaY, teX=None, teY=None, penalty='l1',
     weights = tf.trainable_variables()[0]
     coefs = weights.eval()
     nnotzero = np.sum(coefs != 0)
-    print('used weights: ', nnotzero)
-    return f1_test, best_score, coefs
-
-def log_regression_sklearn(trX, trY, vaX, vaY, teX=None, teY=None, penalty='l1',
-    C=2**np.arange(-8, 1).astype(np.float), seed=42):
-  """
-  Logistic regression
-  Args:
-    C - numpy vector of inv of regularization strength (smaller values ->
-        stronger regularization)
-  """
-  # Find best regularization coefficient
-  scores = []
-  for i, c in enumerate(C):
-    # Model will overfit, we need to test after n steps
-    model = LogisticRegression(C=c, penalty=penalty, random_state=seed+i)
-    model.fit(trX, trY)
-    y_pred = model.predict(vaX)
-    f1_micro = f1_score(vaY, y_pred, pos_label=1, average='binary')
-    score = model.score(vaX, vaY)
-    scores.append(f1_micro)
-  c = C[np.argmax(scores)]
-  model = LogisticRegression(C=c, penalty=penalty, random_state=seed+len(C))
-  model.fit(trX, trY)
-  nnotzero = np.sum(model.coef_ != 0)
-  if teX is not None and teY is not None:
-    y_pred = model.predict(teX)
-    f1_micro = f1_score(teY, y_pred, pos_label=1, average='binary')
-    score = f1_micro*100
-  else:
-    y_pred = model.predict(vaX)
-    f1_micro = f1_score(vaY, y_pred, pos_label=1, average='binary')
-    score = f1_micro*100
-  return score, c, nnotzero
-
+  return f1_test, best_score, coefs
