@@ -1,0 +1,4 @@
+*.swp
+*pycache*
+*.pickle
+sentiment_neuron/
