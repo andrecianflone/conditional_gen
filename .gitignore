@@ -1,3 +1,5 @@
+charts/
+data/
 *.swp
 *pycache*
 *.pickle
