@@ -142,3 +142,33 @@ def log_regression_tf(trX, trY, vaX, vaY, teX, teY):
     coefs = weights.eval()
     nnotzero = np.sum(coefs != 0)
   return f1_test, best_score, coefs
+
+
+def log_regression_sk(trX, trY, vaX, vaY, teX=None, teY=None, penalty='l1',
+    C=2**np.arange(-8, 1).astype(np.float), seed=42):
+  """
+  Same function as sentiment_neuron.utils but also returns the coefficients
+
+  Logistic regression
+  Args:
+    C - numpy vector of inv of regularization strength (smaller values ->
+        stronger regularization)
+  """
+  scores = []
+  for i, c in enumerate(C):
+    model = LogisticRegression(C=c, penalty=penalty, random_state=seed+i)
+    model.fit(trX, trY)
+    score = model.score(vaX, vaY)
+    scores.append(score)
+  c = C[np.argmax(scores)]
+  model = LogisticRegression(C=c, penalty=penalty, random_state=seed+len(C))
+  model.fit(trX, trY)
+  nnotzero = np.sum(model.coef_ != 0)
+  if teX is not None and teY is not None:
+    score = model.score(teX, teY)*100.
+  else:
+    score = model.score(vaX, vaY)*100.
+  # Get indices where coefficients are not zero
+  notzero_coefs_ids = np.nonzero(model.coef_)
+  notzero_coefs = model.coef_[notzero_coefs_ids]
+  return score, c, nnotzero, notzero_coefs_ids, notzero_coefs
