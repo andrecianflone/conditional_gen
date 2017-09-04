@@ -3,4 +3,5 @@ data/
 *.swp
 *pycache*
 *.pickle
+tags
 sentiment_neuron/
