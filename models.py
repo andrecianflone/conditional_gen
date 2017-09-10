@@ -153,6 +153,13 @@ def log_regression_sk(trX, trY, vaX, vaY, teX=None, teY=None, penalty='l1',
   Args:
     C - numpy vector of inv of regularization strength (smaller values ->
         stronger regularization)
+  Returns:
+    score_te: (float) accuracy score
+    score_va: (float) accuracy score
+    c: (float) regularization coefficient
+    nnotzero: (int) number of non-zero neurons
+    nozero_coefs_ids: (np.array) ids where coefs are nonzero
+    notzero_coefs: (np.array) neuron values not equal to zero
   """
   scores = []
   for i, c in enumerate(C):
@@ -164,11 +171,11 @@ def log_regression_sk(trX, trY, vaX, vaY, teX=None, teY=None, penalty='l1',
   model = LogisticRegression(C=c, penalty=penalty, random_state=seed+len(C))
   model.fit(trX, trY)
   nnotzero = np.sum(model.coef_ != 0)
+  score_te = None
   if teX is not None and teY is not None:
-    score = model.score(teX, teY)*100.
-  else:
-    score = model.score(vaX, vaY)*100.
+    score_te = model.score(teX, teY)*100.
+  score_va = model.score(vaX, vaY)*100.
   # Get indices where coefficients are not zero
   notzero_coefs_ids = np.nonzero(model.coef_)
   notzero_coefs = model.coef_[notzero_coefs_ids]
-  return score, c, nnotzero, notzero_coefs_ids, notzero_coefs
+  return score_te, score_va, c, nnotzero, notzero_coefs_ids, notzero_coefs

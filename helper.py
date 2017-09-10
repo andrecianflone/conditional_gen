@@ -114,3 +114,12 @@ if __name__ == "__main__":
   # ids is dictionary of disc IDs, discs is list of raw text
   ids, discs = get_discourse_data('data/all_pdtb.json')
   extract_neurons(ids, discs, "neurons.pickle")
+
+def get_unique_labels(file_path):
+  """ Load dict """
+  with codecs.open(file_path, encoding='utf-8') as f:
+    dictionary = json.load(f)
+  relations = set([rel for rel in dictionary.values()])
+  return relations
+
+

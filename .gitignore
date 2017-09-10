@@ -3,5 +3,6 @@ data/
 *.swp
 *pycache*
 *.pickle
+*.pkl
 tags
 sentiment_neuron/
