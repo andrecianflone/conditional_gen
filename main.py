@@ -15,14 +15,10 @@ import time
 # print('%05.2f test f1'%f1_test)
 # print('%05.2f validation f1'%f1_val)
 
-# Which relation? Use mapping file
-relations = get_unique_labels('data/mapping_none.json')
-folders = ['fine_binary_implicit', 'fine_binary_all', 'fine_binary_explicit']
+# TODO does the original data contain the connective inside the args!!??
 
-# relations = ['Temporal', 'Contingency', 'Expansion', 'Comparison']
-# folders = ['binary_implicit', 'binary_all_rel', 'binary_explicit']
-
-def train(folder, relation):
+def train(folder, relation, saveas):
+  """ Logistic regression to discover discourse relation neurons """
   from models import log_regression_tf, log_regression_sk
   # Load hidden states previously extracted
   print("loading hidden states")
@@ -75,7 +71,7 @@ def train(folder, relation):
           })
 
   # Save results
-  pickle.dump(results, open("results.pkl","wb"))
+  pickle.dump(results, open(saveas,"wb"))
   print('total exec time: {} min'.format(round((time.time() - t0)/60, 1)))
 
 def find_result(data, relation, folder):
@@ -94,32 +90,56 @@ def chart(pkl, max_rows):
     max_rows: max num of rows per chart
   """
   data = pickle.load(open(pkl, "rb"))
-  relations = list(set([x['relation'] for x in data])).sort()
-  folders   = list(set([x['folder'] for x in data])).sort()
+  relations = list(set([x['relation'] for x in data])); relations.sort()
+  folders   = list(set([x['folder'] for x in data])); folders.sort()
   plots = max_rows*len(folders)
 
   # Loop through list
   plot_number = 0
-  for relation in relations:
-    for folder in folders:
+  for r, relation in enumerate(relations):
+    for f, folder in enumerate(folders):
       plot_number += 1
       # Get single result
       d = find_result(data, relation, folder)
-      if d is None: continue
+      isLast = True if r==(len(relations)-1) and f==(len(folders)-1) else False
+      if d is None:
+        if (plot_number%plots==0 and plot_number!=0) or isLast==True:
+          plt.rcParams["figure.figsize"] = [16,9]
+          plt.subplots_adjust(hspace=0.6,wspace=0.5)
+          # plt.savefig('my_fig.png', dpi=96)
+          plt.show()
+          plot_number=0
+        continue
+
       # Chart
       title = relation + ' ' + folder
-      label = 'size tr/va/te {:0.0f}/{:0.0f}/{:0.0f}, acc {:0.2f},\
-        reg coef {:0.2f}, neurons: {:0.0f}'.format(d['size_train'],
+      label = 'size tr/va/te {:0.0f}/{:0.0f}/{:0.0f}, acc {:0.2f}, reg coef {:0.2f}, neurons: {:0.0f}'.format(d['size_train'],
             d['size_val'], d['size_test'], d['score_test'], d['coefficient'],
                                                                 d['nnotzero'])
       bar_chart(d['notzero_coefs'], title, label, max_rows,\
                                                       len(folders), plot_number)
-      if plot_number%plots==0:
+      if plot_number%plots == 0 or isLast==True:
+        plt.rcParams["figure.figsize"] = [16,9]
+        plt.subplots_adjust(hspace=0.6,wspace=0.5)
+        # plt.savefig('my_fig.png', dpi=96)
         plt.show()
         plot_number=0
 
 # histogram(notzero_coefs, bins=100)
-
 if __name__=="__main__":
-  chart("results.pkl", 4)
+  # Fine grained
+  relations = get_unique_labels('data/mapping_none.json')
+  folders = ['fine_binary_implicit', 'fine_binary_all', 'fine_binary_explicit']
+
+  # Coarse, with separate entrel
+  relations = get_unique_labels('data/mapping_to_top_w_entrel.json')
+  folders = [
+    'coarse_binary_split_entrel_implicit_entrel',
+    'coarse_binary_split_entrel_all',
+    'coarse_binary_split_entrel_explicit'
+    ]
+
+  # train(folders, relations, "coarse_results_split_entrel.pkl")
+  chart("coarse_results_split_entrel.pkl", 4)
+
 

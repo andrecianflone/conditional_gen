@@ -77,6 +77,12 @@ def get_discourse_data(path):
 
   return disc_dic, disc_text
 
+def generate_sequence(text):
+  from sentiment_neuron.encoder import Model
+  # get hidden unit values as npy
+  model = Model()
+  # make new model.generate(text)
+  
 def extract_neurons(ids, discs, save_path):
   """
   Get the hidden state params from the language model and save to disc
