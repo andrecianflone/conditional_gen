@@ -1,4 +1,4 @@
-import codecs
+import codecs, os
 import json
 import pickle
 import numpy as np
@@ -82,7 +82,31 @@ def find_result(data, relation, folder):
   # If not found, return none
   return None
 
-def chart(pkl, max_rows):
+def chart_single(pkl):
+  """ Export all results from pickle to chart """
+  data = pickle.load(open(pkl, "rb"))
+  with open('rs.csv', 'w') as f:
+    f.write('folder,relation,accuracy,neurons,std,>1std,>2std\n')
+    for d in data:
+      folder = d["folder"]
+      relation = d["relation"]
+      f.write(folder+','+relation+',')
+      weights = d['notzero_coefs']
+      std = weights.std()
+      gt1 = np.sum(np.greater(weights, std))
+      gt2 = np.sum(np.greater(weights, 2*std))
+      name = relation + '-' + folder
+      label = 'accuracy:{:0.2f}, neurons:{:0.0f}, std:{:0.2f}, >1 std:{:0.0f}, >2 std:{:0.0f}'.format(d['score_test'], d['nnotzero'], std, gt1, gt2)
+      label_write = '{:0.2f}, {:0.0f}, {:0.2f}, {:0.0f}, {:0.0f}'.format(d['score_test'], d['nnotzero'], std, gt1, gt2)
+      x = range(d['notzero_coefs'].shape[0])
+      plt.bar(x, d['notzero_coefs'], width=1)
+      plt.xlabel(label, fontsize=16)
+      plt.savefig('charts/top-level/'+name, dpi=96)
+      plt.clf()
+      f.write(label_write+'\n')
+      # plt.show()
+
+def chart_group(pkl, max_rows):
   """
   Chart list of results
   Args:
@@ -140,6 +164,7 @@ if __name__=="__main__":
     ]
 
   # train(folders, relations, "coarse_results_split_entrel.pkl")
-  chart("coarse_results_split_entrel.pkl", 4)
+  # chart_group("coarse_results_split_entrel.pkl", 4)
+  chart_single("coarse_results_split_entrel.pkl")
 
 

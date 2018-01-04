@@ -82,7 +82,7 @@ def generate_sequence(text):
   # get hidden unit values as npy
   model = Model()
   # make new model.generate(text)
-  
+
 def extract_neurons(ids, discs, save_path):
   """
   Get the hidden state params from the language model and save to disc
@@ -101,6 +101,11 @@ def histogram(arr, bins):
   plt.hist(arr, bins=bins, label='coef value')
   plt.legend()
   plt.show()
+
+def bar_chart_clean(arr, label):
+  x = range(arr.shape[0])
+  plt.bar(x, arr, width=1)
+  plt.xlabel(label)
 
 def bar_chart(arr, title, label, row, col, position):
   x = range(arr.shape[0])
